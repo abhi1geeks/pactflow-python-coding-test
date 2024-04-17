@@ -8,27 +8,28 @@ version information.
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from pypacter.programming_lang_detector import detect_language
 from pypacter_api import get_version
+from src.pypacter import programming_language_detector as pld
 
 router = APIRouter()
 
 
-@router.post("/detect-programming-language", tags=["Language"])
-async def detect_programming_language_api(code_snippet: str) -> JSONResponse:
+@router.post("/detect-language", tags=["language"])
+async def detect_code_language(code_snippet: str) -> JSONResponse:
     """
-    Endpoint to detect the language of a code snippet.
+    Detect the most likely programming language for a given code snippet.
 
-    Accepts a POST request with a text payload containing the code snippet.
-
-    Args:
-    code_snippet: The code snippet to analyze.
+    Parameters:
+        - code_snippet (str): The input code snippet.
 
     Returns:
-    A JSON response containing the detected language.
+        A JSON response containing the detected programming language.
     """
-    language = detect_language(code_snippet)
-    return JSONResponse(content={"language": language})
+    try:
+        detected_language = pld.language_detector(code_snippet)
+        return JSONResponse(content={"detected_language": detected_language})
+    except KeyError:
+        return JSONResponse(content={"detected_language": "Unkown"})
 
 
 @router.get("/health", tags=["health"])
